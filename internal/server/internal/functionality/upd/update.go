@@ -1,9 +1,9 @@
 package upd
 
 import (
-	"errors"
 	"github.com/Vackhan/metrics/internal/server/internal/runerr"
 	"github.com/Vackhan/metrics/internal/server/internal/storage"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -20,11 +20,8 @@ func (u *Update) DoUpdate(path string) error {
 	if len(urlData) != 4 {
 		return runerr.ErrWrongURL
 	}
+	log.Println(urlData)
 	var err error
-	updateRepo, ok := u.storage.(storage.UpdateRepo)
-	if !ok {
-		return errors.New("wrong repo")
-	}
 	switch urlData[1] {
 	case gaugeType:
 		var g float64
@@ -32,16 +29,17 @@ func (u *Update) DoUpdate(path string) error {
 			return runerr.ErrWrongMetricType
 		}
 
-		err := updateRepo.AddToGauge(urlData[2], g)
+		err = u.storage.AddToGauge(urlData[2], g)
 		if err != nil {
 			return err
 		}
 	case counterType:
 		var c int64
-		if c, err = strconv.ParseInt(urlData[3], 10, 64); err == nil {
+		if c, err = strconv.ParseInt(urlData[3], 10, 64); err != nil {
+			log.Println(err)
 			return runerr.ErrWrongMetricType
 		}
-		err := updateRepo.AddToCounter(urlData[2], c)
+		err := u.storage.AddToCounter(urlData[2], c)
 		if err != nil {
 			return err
 		}
