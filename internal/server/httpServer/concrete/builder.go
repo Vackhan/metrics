@@ -2,7 +2,7 @@ package concrete
 
 import (
 	"github.com/Vackhan/metrics/internal/server"
-	"github.com/Vackhan/metrics/internal/server/http_server/internal/endpoints/update_endpoint"
+	"github.com/Vackhan/metrics/internal/server/httpServer/internal/endpoints/update_endpoint"
 	"github.com/Vackhan/metrics/internal/server/internal/storage/memory/update"
 )
 

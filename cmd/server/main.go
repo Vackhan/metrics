@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/Vackhan/metrics/internal/server"
-	httpConcrete "github.com/Vackhan/metrics/internal/server/http_server/concrete"
+	httpConcrete "github.com/Vackhan/metrics/internal/server/httpServer/concrete"
 	"log"
 )
 

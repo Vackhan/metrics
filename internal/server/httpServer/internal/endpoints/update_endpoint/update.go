@@ -3,7 +3,7 @@ package update_endpoint
 import (
 	"github.com/Vackhan/metrics/internal/server"
 	"github.com/Vackhan/metrics/internal/server/internal/functionality/update_endpoint"
-	"github.com/Vackhan/metrics/internal/server/internal/functionality_errors"
+	"github.com/Vackhan/metrics/internal/server/internal/functionalityErrors"
 	"github.com/Vackhan/metrics/internal/server/internal/storage"
 	"net/http"
 )
@@ -25,9 +25,9 @@ func updateFunc(repo server.Repository) func(w http.ResponseWriter, r *http.Requ
 		err := command.DoUpdate(r.URL.Path)
 		if err != nil {
 			switch err {
-			case functionality_errors.EmptyMetricName:
+			case functionalityErrors.ErrEmptyMetricName:
 				w.WriteHeader(http.StatusNotFound)
-			case functionality_errors.WrongMetricType:
+			case functionalityErrors.ErrWrongMetricType:
 				w.WriteHeader(http.StatusBadRequest)
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
