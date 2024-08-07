@@ -2,6 +2,7 @@ package concrete
 
 import (
 	"github.com/Vackhan/metrics/internal/server"
+	"github.com/Vackhan/metrics/internal/server/internal/runerr"
 	"net/http"
 )
 
@@ -23,9 +24,9 @@ func (h *httpServer) Run() error {
 	for _, e := range h.endpoints {
 		f, ok := e.GetFunctionality().(httpServerHandler)
 		if !ok {
-			return server.WrongHandlerType
+			return runerr.ErrWrongHandlerType
 		}
-		mux.HandleFunc(e.GetUrl(), f)
+		mux.HandleFunc(e.GetURL(), f)
 	}
 	return http.ListenAndServe(h.url, mux)
 }

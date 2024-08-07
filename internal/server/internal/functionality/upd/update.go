@@ -1,9 +1,9 @@
-package update_endpoint
+package upd
 
 import (
 	"errors"
 	"github.com/Vackhan/metrics/internal/server"
-	"github.com/Vackhan/metrics/internal/server/internal/functionalityErrors"
+	"github.com/Vackhan/metrics/internal/server/internal/runerr"
 	"github.com/Vackhan/metrics/internal/server/internal/storage"
 	"strconv"
 	"strings"
@@ -21,7 +21,7 @@ type Update struct {
 func (u *Update) DoUpdate(path string) error {
 	urlData := strings.Split(path[1:], "/")
 	if len(urlData) != 4 {
-		return functionalityErrors.ErrWrongUrl
+		return runerr.ErrWrongURL
 	}
 	var err error
 	updateRepo, ok := u.storage.(storage.UpdateRepo)
@@ -32,7 +32,7 @@ func (u *Update) DoUpdate(path string) error {
 	case gaugeType:
 		var g float64
 		if g, err = strconv.ParseFloat(urlData[3], 64); err != nil {
-			return functionalityErrors.ErrWrongMetricType
+			return runerr.ErrWrongMetricType
 		}
 
 		err := updateRepo.AddToGauge(urlData[2], g)
@@ -42,11 +42,11 @@ func (u *Update) DoUpdate(path string) error {
 	case counterType:
 		var c int64
 		if c, err = strconv.ParseInt(urlData[3], 10, 64); err == nil {
-			return functionalityErrors.ErrWrongMetricType
+			return runerr.ErrWrongMetricType
 		}
 		updateRepo.AddToCounter(urlData[2], c)
 	default:
-		return functionalityErrors.ErrWrongMetricType
+		return runerr.ErrWrongMetricType
 	}
 	return nil
 }

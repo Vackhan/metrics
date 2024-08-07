@@ -1,11 +1,8 @@
 package server
 
 import (
-	"errors"
 	"net/http"
 )
-
-var WrongHandlerType = errors.New("wrong handler type")
 
 type Server interface {
 	Run() error
@@ -15,7 +12,7 @@ type Server interface {
 
 type Handler func(w http.ResponseWriter, r *http.Request)
 type Endpoint interface {
-	GetUrl() string
+	GetURL() string
 	GetFunctionality(repos ...Repository) any
 }
 
