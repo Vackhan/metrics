@@ -1,6 +1,6 @@
 package server
 
 func NewServer(s Server, urlListener string) Server {
-	s.SetUrlListener(urlListener)
+	s.SetURLListener(urlListener)
 	return s
 }

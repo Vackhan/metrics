@@ -6,7 +6,7 @@ import (
 
 type Server interface {
 	Run() error
-	SetUrlListener(url string)
+	SetURLListener(url string)
 	SetEndpoints(endPointList ...Endpoint)
 }
 

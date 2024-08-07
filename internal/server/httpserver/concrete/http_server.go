@@ -11,7 +11,7 @@ type httpServer struct {
 	endpoints []server.Endpoint
 }
 
-func (h *httpServer) SetUrlListener(url string) {
+func (h *httpServer) SetURLListener(url string) {
 	h.url = url
 }
 
