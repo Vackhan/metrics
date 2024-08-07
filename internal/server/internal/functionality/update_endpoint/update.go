@@ -1,0 +1,56 @@
+package update_endpoint
+
+import (
+	"errors"
+	"github.com/Vackhan/metrics/internal/server"
+	"github.com/Vackhan/metrics/internal/server/internal/functionality_errors"
+	"github.com/Vackhan/metrics/internal/server/internal/storage"
+	"strconv"
+	"strings"
+)
+
+const gaugeType = "gauge"
+const counterType = "counter"
+
+var listType = []string{gaugeType, counterType}
+
+type Update struct {
+	storage server.Repository
+}
+
+func (u *Update) DoUpdate(path string) error {
+	urlData := strings.Split(path[1:], "/")
+	if len(urlData) != 4 {
+		return functionality_errors.WrongUrl
+	}
+	var err error
+	updateRepo, ok := u.storage.(storage.UpdateRepo)
+	if !ok {
+		return errors.New("wrong repo")
+	}
+	switch urlData[1] {
+	case gaugeType:
+		var g float64
+		if g, err = strconv.ParseFloat(urlData[3], 64); err != nil {
+			return functionality_errors.WrongMetricType
+		}
+
+		err := updateRepo.AddToGauge(urlData[2], g)
+		if err != nil {
+			return err
+		}
+	case counterType:
+		var c int64
+		if c, err = strconv.ParseInt(urlData[3], 10, 64); err == nil {
+			return functionality_errors.WrongMetricType
+		}
+		updateRepo.AddToCounter(urlData[2], c)
+	default:
+		return functionality_errors.WrongMetricType
+	}
+	return nil
+}
+
+func NewUpdate(s server.Repository) Update {
+	return Update{s}
+}
