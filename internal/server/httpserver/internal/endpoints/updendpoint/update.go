@@ -1,7 +1,6 @@
 package updendpoint
 
 import (
-	"github.com/Vackhan/metrics/internal/server"
 	"github.com/Vackhan/metrics/internal/server/internal/functionality/upd"
 	"github.com/Vackhan/metrics/internal/server/internal/runerr"
 	"github.com/Vackhan/metrics/internal/server/internal/storage"
@@ -13,13 +12,13 @@ type Update struct {
 }
 
 func (u *Update) GetURL() string {
-	return "/upd/"
+	return "/update/"
 }
-func (u *Update) GetFunctionality(repos ...server.Repository) any {
-	return updateFunc(repos[0])
+func (u *Update) GetFunctionality() any {
+	return updateFunc(u.repo)
 }
 
-func updateFunc(repo server.Repository) func(w http.ResponseWriter, r *http.Request) {
+func updateFunc(repo storage.UpdateRepo) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		command := upd.NewUpdate(repo)
 		err := command.DoUpdate(r.URL.Path)
@@ -35,7 +34,10 @@ func updateFunc(repo server.Repository) func(w http.ResponseWriter, r *http.Requ
 		} else {
 			w.WriteHeader(http.StatusOK)
 		}
-		w.Write(nil)
+		_, err = w.Write(nil)
+		if err != nil {
+			return
+		}
 	}
 }
 

@@ -2,7 +2,6 @@ package upd
 
 import (
 	"errors"
-	"github.com/Vackhan/metrics/internal/server"
 	"github.com/Vackhan/metrics/internal/server/internal/runerr"
 	"github.com/Vackhan/metrics/internal/server/internal/storage"
 	"strconv"
@@ -12,10 +11,8 @@ import (
 const gaugeType = "gauge"
 const counterType = "counter"
 
-var listType = []string{gaugeType, counterType}
-
 type Update struct {
-	storage server.Repository
+	storage storage.UpdateRepo
 }
 
 func (u *Update) DoUpdate(path string) error {
@@ -44,13 +41,16 @@ func (u *Update) DoUpdate(path string) error {
 		if c, err = strconv.ParseInt(urlData[3], 10, 64); err == nil {
 			return runerr.ErrWrongMetricType
 		}
-		updateRepo.AddToCounter(urlData[2], c)
+		err := updateRepo.AddToCounter(urlData[2], c)
+		if err != nil {
+			return err
+		}
 	default:
 		return runerr.ErrWrongMetricType
 	}
 	return nil
 }
 
-func NewUpdate(s server.Repository) Update {
+func NewUpdate(s storage.UpdateRepo) Update {
 	return Update{s}
 }

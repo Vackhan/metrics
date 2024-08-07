@@ -11,5 +11,5 @@ func WithHTTPServer() server.Server {
 	s.SetEndpoints(
 		updendpoint.NewUpdateEndpoint(update.NewMemStorage()),
 	)
-	return &httpServer{}
+	return s
 }

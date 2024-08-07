@@ -3,6 +3,7 @@ package concrete
 import (
 	"github.com/Vackhan/metrics/internal/server"
 	"github.com/Vackhan/metrics/internal/server/internal/runerr"
+	"log"
 	"net/http"
 )
 
@@ -21,14 +22,15 @@ func (h *httpServer) SetEndpoints(e ...server.Endpoint) {
 
 func (h *httpServer) Run() error {
 	mux := http.NewServeMux()
+	log.Println(h.endpoints)
 	for _, e := range h.endpoints {
-		f, ok := e.GetFunctionality().(httpServerHandler)
+		f, ok := e.GetFunctionality().(func(w http.ResponseWriter, r *http.Request))
 		if !ok {
 			return runerr.ErrWrongHandlerType
 		}
 		mux.HandleFunc(e.GetURL(), f)
+		log.Println("listen to " + e.GetURL())
 	}
+	log.Println("run server")
 	return http.ListenAndServe(h.url, mux)
 }
-
-type httpServerHandler func(w http.ResponseWriter, r *http.Request)
