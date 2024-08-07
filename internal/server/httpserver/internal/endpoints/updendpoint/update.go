@@ -28,6 +28,8 @@ func updateFunc(repo storage.UpdateRepo) func(w http.ResponseWriter, r *http.Req
 				w.WriteHeader(http.StatusNotFound)
 			case runerr.ErrWrongMetricType:
 				w.WriteHeader(http.StatusBadRequest)
+			case runerr.ErrWrongURL:
+				w.WriteHeader(http.StatusNotFound)
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
 			}
