@@ -7,7 +7,10 @@ import (
 )
 
 func main() {
-	err := server.NewServer(httpConcrete.WithHTTPServer(), ":8080").Run()
+	err := server.NewServer(
+		httpConcrete.WithHTTPServer(),
+		":8080",
+	).Run()
 	if err != nil {
 		log.Println(err)
 		return
