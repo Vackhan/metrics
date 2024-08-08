@@ -9,7 +9,6 @@ import (
 	"reflect"
 	"runtime"
 	"slices"
-	"sync"
 	"time"
 )
 
@@ -19,25 +18,20 @@ func New() *Agent {
 	return &Agent{}
 }
 
-func (a *Agent) Run() {
+func (a *Agent) Run(domAndPort string) {
 	memStats := &runtime.MemStats{}
-	wg := &sync.WaitGroup{}
 	memStatsChan := make(chan interface{}, 10)
-	wg.Add(1)
-	go sendToServer(memStatsChan, wg)
+	go sendToServer(memStatsChan, domAndPort)
 	for {
 		runtime.ReadMemStats(memStats)
 		memStatsChan <- *memStats
 		time.Sleep(2 * time.Second)
 	}
-	wg.Wait()
 }
 
 var types = []string{"uint64", "uint32", "float64"}
 
-func sendToServer(c chan interface{}, wg *sync.WaitGroup) {
-	defer wg.Done()
-	var err error
+func sendToServer(c chan interface{}, domAndPort string) {
 	for {
 		select {
 		case memStats := <-c:
@@ -55,31 +49,34 @@ func sendToServer(c chan interface{}, wg *sync.WaitGroup) {
 				typeOfField := val.Field(i).Type().String()
 				value := val.Field(i).Interface()
 				if slices.Contains(types, typeOfField) {
-					_, err = http.Post(formatUrl(update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
+					post, err := http.Post(formatUrl(domAndPort, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
+					post.Body.Close()
 					if err != nil {
 						log.Println(err)
 						return
 					}
 				}
 			}
-			_, err = http.Post(formatUrl(update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
+			post, err := http.Post(formatUrl(domAndPort, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
+			post.Body.Close()
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			_, err = http.Post(formatUrl(update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
+			post, err = http.Post(formatUrl(domAndPort, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
 			if err != nil {
 				log.Println(err)
 				return
 			}
+			post.Body.Close()
 		default:
 			time.Sleep(10 * time.Second)
 		}
 	}
 }
 
-func formatUrl(metricType, metricName string, value any) string {
-	url := fmt.Sprintf("http://localhost:8080/update/%s/%s/%v", metricType, metricName, value)
+func formatUrl(domAndPort, metricType, metricName string, value any) string {
+	url := fmt.Sprintf("http://%s/update/%s/%s/%v", domAndPort, metricType, metricName, value)
 	log.Println(url)
 	return url
 }
