@@ -49,7 +49,7 @@ func sendToServer(c chan interface{}, domAndPort string) {
 				typeOfField := val.Field(i).Type().String()
 				value := val.Field(i).Interface()
 				if slices.Contains(types, typeOfField) {
-					post, err := http.Post(formatUrl(domAndPort, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
+					post, err := http.Post(formatURL(domAndPort, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
 					post.Body.Close()
 					if err != nil {
 						log.Println(err)
@@ -57,13 +57,13 @@ func sendToServer(c chan interface{}, domAndPort string) {
 					}
 				}
 			}
-			post, err := http.Post(formatUrl(domAndPort, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
+			post, err := http.Post(formatURL(domAndPort, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
 			post.Body.Close()
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			post, err = http.Post(formatUrl(domAndPort, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
+			post, err = http.Post(formatURL(domAndPort, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
 			if err != nil {
 				log.Println(err)
 				return
@@ -75,7 +75,7 @@ func sendToServer(c chan interface{}, domAndPort string) {
 	}
 }
 
-func formatUrl(domAndPort, metricType, metricName string, value any) string {
+func formatURL(domAndPort, metricType, metricName string, value any) string {
 	url := fmt.Sprintf("http://%s/update/%s/%s/%v", domAndPort, metricType, metricName, value)
 	log.Println(url)
 	return url
