@@ -77,6 +77,5 @@ func sendToServer(c chan interface{}, domAndPort string) {
 
 func formatURL(domAndPort, metricType, metricName string, value any) string {
 	url := fmt.Sprintf("http://%s/update/%s/%s/%v", domAndPort, metricType, metricName, value)
-	log.Println(url)
 	return url
 }
