@@ -2,7 +2,7 @@ package concrete
 
 import (
 	"github.com/Vackhan/metrics/internal/server"
-	"github.com/Vackhan/metrics/internal/server/runerr"
+	"github.com/Vackhan/metrics/internal/server/pkg/runerr"
 	"log"
 	"net/http"
 )

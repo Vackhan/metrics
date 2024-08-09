@@ -2,7 +2,7 @@ package agent
 
 import (
 	"fmt"
-	"github.com/Vackhan/metrics/internal/server/functionality/update"
+	"github.com/Vackhan/metrics/internal/server/pkg/functionality/update"
 	"log"
 	"math/rand"
 	"net/http"
@@ -49,33 +49,39 @@ func sendToServer(c chan interface{}, domAndPort string) {
 				typeOfField := val.Field(i).Type().String()
 				value := val.Field(i).Interface()
 				if slices.Contains(types, typeOfField) {
-					post, err := http.Post(formatURL(domAndPort, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
-					post.Body.Close()
+					post, err := http.Post(FormatURL(domAndPort, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
+					if post.Body != nil {
+						post.Body.Close()
+					}
 					if err != nil {
 						log.Println(err)
 						return
 					}
 				}
 			}
-			post, err := http.Post(formatURL(domAndPort, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
-			post.Body.Close()
+			post, err := http.Post(FormatURL(domAndPort, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
+			if post.Body != nil {
+				post.Body.Close()
+			}
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			post, err = http.Post(formatURL(domAndPort, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
+			post, err = http.Post(FormatURL(domAndPort, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			post.Body.Close()
+			if post.Body != nil {
+				post.Body.Close()
+			}
 		default:
 			time.Sleep(10 * time.Second)
 		}
 	}
 }
 
-func formatURL(domAndPort, metricType, metricName string, value any) string {
+func FormatURL(domAndPort, metricType, metricName string, value any) string {
 	url := fmt.Sprintf("http://%s/update/%s/%s/%v", domAndPort, metricType, metricName, value)
 	return url
 }

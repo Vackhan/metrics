@@ -1,7 +1,7 @@
 package update
 
 import (
-	"github.com/Vackhan/metrics/internal/server/storage"
+	"github.com/Vackhan/metrics/internal/server/pkg/storage"
 )
 
 type MemStorage struct {

@@ -1,9 +1,9 @@
 package update
 
 import (
-	"github.com/Vackhan/metrics/internal/server/functionality/update"
-	"github.com/Vackhan/metrics/internal/server/runerr"
-	"github.com/Vackhan/metrics/internal/server/storage"
+	"github.com/Vackhan/metrics/internal/server/pkg/functionality/update"
+	"github.com/Vackhan/metrics/internal/server/pkg/runerr"
+	"github.com/Vackhan/metrics/internal/server/pkg/storage"
 	"net/http"
 )
 
