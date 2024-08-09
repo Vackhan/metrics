@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"fmt"
 	"github.com/Vackhan/metrics/internal/server/pkg/functionality/update"
 	"math/rand"
@@ -17,40 +18,26 @@ func New() *Agent {
 	return &Agent{}
 }
 
-func (a *Agent) Run(domAndPort string) {
+func (a *Agent) Run(domAndPort string, ctx context.Context) {
 	memStats := &runtime.MemStats{}
-	//memStatsChan := make(chan interface{}, 10)
-	//sendDataToChan(memStats, memStatsChan)
-	//go sendToServer(memStatsChan, domAndPort)
+	counter := 0
 	for {
-		//if _, ok := <-memStatsChan; !ok {
-		//	return
-		//}
-		runtime.ReadMemStats(memStats)
-		time.Sleep(2 * time.Second)
-		sendMemStats(*memStats, domAndPort)
-		//sendDataToChan(memStats, memStatsChan)
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			counter++
+			runtime.ReadMemStats(memStats)
+			time.Sleep(2 * time.Second)
+			if counter == 5 {
+				counter = 0
+				sendMemStats(*memStats, domAndPort)
+			}
+		}
 	}
 }
 
 var types = []string{"uint64", "uint32", "float64"}
-
-func sendDataToChan(memStats *runtime.MemStats, memStatsChan chan interface{}) {
-	runtime.ReadMemStats(memStats)
-	memStatsChan <- *memStats
-}
-
-func sendToServer(c chan interface{}, domAndPort string) {
-	defer close(c)
-	for {
-		select {
-		case memStats := <-c:
-			sendMemStats(memStats, domAndPort)
-		default:
-			time.Sleep(10 * time.Second)
-		}
-	}
-}
 
 func sendMemStats(memStats any, domAndPort string) {
 	t := reflect.TypeOf(memStats)
