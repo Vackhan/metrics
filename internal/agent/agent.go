@@ -3,7 +3,6 @@ package agent
 import (
 	"fmt"
 	"github.com/Vackhan/metrics/internal/server/pkg/functionality/update"
-	"log"
 	"math/rand"
 	"net/http"
 	"reflect"
@@ -54,7 +53,7 @@ func sendToServer(c chan interface{}, domAndPort string) {
 						post.Body.Close()
 					}
 					if err != nil {
-						log.Println(err)
+						//log.Println(err)
 						return
 					}
 				}
@@ -64,12 +63,12 @@ func sendToServer(c chan interface{}, domAndPort string) {
 				post.Body.Close()
 			}
 			if err != nil {
-				log.Println(err)
+				//log.Println(err)
 				return
 			}
 			post, err = http.Post(FormatURL(domAndPort, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
 			if post != nil && err != nil {
-				log.Println(err)
+				//log.Println(err)
 				return
 			}
 			if post.Body != nil {
