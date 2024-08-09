@@ -19,12 +19,17 @@ func New() *Agent {
 
 func (a *Agent) Run(domAndPort string) {
 	memStats := &runtime.MemStats{}
-	memStatsChan := make(chan interface{}, 10)
-	sendDataToChan(memStats, memStatsChan)
-	go sendToServer(memStatsChan, domAndPort)
+	//memStatsChan := make(chan interface{}, 10)
+	//sendDataToChan(memStats, memStatsChan)
+	//go sendToServer(memStatsChan, domAndPort)
 	for {
+		//if _, ok := <-memStatsChan; !ok {
+		//	return
+		//}
+		runtime.ReadMemStats(memStats)
 		time.Sleep(2 * time.Second)
-		sendDataToChan(memStats, memStatsChan)
+		sendMemStats(*memStats, domAndPort)
+		//sendDataToChan(memStats, memStatsChan)
 	}
 }
 
@@ -36,34 +41,33 @@ func sendDataToChan(memStats *runtime.MemStats, memStatsChan chan interface{}) {
 }
 
 func sendToServer(c chan interface{}, domAndPort string) {
+	defer close(c)
 	for {
 		select {
 		case memStats := <-c:
-			t := reflect.TypeOf(memStats)
-			if t.Kind() == reflect.Ptr {
-				t = t.Elem()
-			}
-			if t.Kind() != reflect.Struct {
-				panic("input must be a struct")
-			}
+			sendMemStats(memStats, domAndPort)
+		default:
+			time.Sleep(10 * time.Second)
+		}
+	}
+}
 
-			val := reflect.ValueOf(memStats)
-			for i := 0; i < t.NumField(); i++ {
-				field := t.Field(i)
-				typeOfField := val.Field(i).Type().String()
-				value := val.Field(i).Interface()
-				if slices.Contains(types, typeOfField) {
-					post, err := http.Post(FormatURL(domAndPort, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
-					if post != nil && post.Body != nil {
-						post.Body.Close()
-					}
-					if err != nil {
-						//log.Println(err)
-						return
-					}
-				}
-			}
-			post, err := http.Post(FormatURL(domAndPort, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
+func sendMemStats(memStats any, domAndPort string) {
+	t := reflect.TypeOf(memStats)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	if t.Kind() != reflect.Struct {
+		panic("input must be a struct")
+	}
+
+	val := reflect.ValueOf(memStats)
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		typeOfField := val.Field(i).Type().String()
+		value := val.Field(i).Interface()
+		if slices.Contains(types, typeOfField) {
+			post, err := http.Post(FormatURL(domAndPort, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
 			if post != nil && post.Body != nil {
 				post.Body.Close()
 			}
@@ -71,17 +75,23 @@ func sendToServer(c chan interface{}, domAndPort string) {
 				//log.Println(err)
 				return
 			}
-			post, err = http.Post(FormatURL(domAndPort, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
-			if post != nil && err != nil {
-				//log.Println(err)
-				return
-			}
-			if post.Body != nil {
-				post.Body.Close()
-			}
-		default:
-			time.Sleep(10 * time.Second)
 		}
+	}
+	post, err := http.Post(FormatURL(domAndPort, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
+	if post != nil && post.Body != nil {
+		post.Body.Close()
+	}
+	if err != nil {
+		//log.Println(err)
+		return
+	}
+	post, err = http.Post(FormatURL(domAndPort, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
+	if post != nil && err != nil {
+		//log.Println(err)
+		return
+	}
+	if post.Body != nil {
+		post.Body.Close()
 	}
 }
 
