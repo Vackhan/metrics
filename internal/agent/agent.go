@@ -20,15 +20,20 @@ func New() *Agent {
 func (a *Agent) Run(domAndPort string) {
 	memStats := &runtime.MemStats{}
 	memStatsChan := make(chan interface{}, 10)
+	sendDataToChan(memStats, memStatsChan)
 	go sendToServer(memStatsChan, domAndPort)
 	for {
-		runtime.ReadMemStats(memStats)
-		memStatsChan <- *memStats
 		time.Sleep(2 * time.Second)
+		sendDataToChan(memStats, memStatsChan)
 	}
 }
 
 var types = []string{"uint64", "uint32", "float64"}
+
+func sendDataToChan(memStats *runtime.MemStats, memStatsChan chan interface{}) {
+	runtime.ReadMemStats(memStats)
+	memStatsChan <- *memStats
+}
 
 func sendToServer(c chan interface{}, domAndPort string) {
 	for {
