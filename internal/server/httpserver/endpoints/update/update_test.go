@@ -40,6 +40,7 @@ func TestHttpUpdateEndpoint(t *testing.T) {
 		handler(w, request)
 
 		res := w.Result()
+		defer res.Body.Close()
 		// проверяем код ответа
 		assert.Equal(t, test.code, res.StatusCode)
 	}
