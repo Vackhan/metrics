@@ -1,6 +1,8 @@
 package update
 
-import "github.com/Vackhan/metrics/internal/server/internal/storage"
+import (
+	"github.com/Vackhan/metrics/internal/server/pkg/storage"
+)
 
 type MemStorage struct {
 	gauge   map[string]float64

@@ -1,9 +1,9 @@
-package updendpoint
+package update
 
 import (
-	"github.com/Vackhan/metrics/internal/server/internal/functionality/upd"
-	"github.com/Vackhan/metrics/internal/server/internal/runerr"
-	"github.com/Vackhan/metrics/internal/server/internal/storage"
+	"github.com/Vackhan/metrics/internal/server/pkg/functionality/update"
+	"github.com/Vackhan/metrics/internal/server/pkg/runerr"
+	"github.com/Vackhan/metrics/internal/server/pkg/storage"
 	"net/http"
 )
 
@@ -20,7 +20,7 @@ func (u *Update) GetFunctionality() any {
 
 func updateFunc(repo storage.UpdateRepo) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		command := upd.NewUpdate(repo)
+		command := update.NewUpdate(repo)
 		err := command.DoUpdate(r.URL.Path)
 		if err != nil {
 			switch err {
