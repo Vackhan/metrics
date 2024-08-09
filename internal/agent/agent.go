@@ -50,7 +50,7 @@ func sendToServer(c chan interface{}, domAndPort string) {
 				value := val.Field(i).Interface()
 				if slices.Contains(types, typeOfField) {
 					post, err := http.Post(FormatURL(domAndPort, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
-					if post.Body != nil {
+					if post != nil && post.Body != nil {
 						post.Body.Close()
 					}
 					if err != nil {
@@ -60,7 +60,7 @@ func sendToServer(c chan interface{}, domAndPort string) {
 				}
 			}
 			post, err := http.Post(FormatURL(domAndPort, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
-			if post.Body != nil {
+			if post != nil && post.Body != nil {
 				post.Body.Close()
 			}
 			if err != nil {
@@ -68,7 +68,7 @@ func sendToServer(c chan interface{}, domAndPort string) {
 				return
 			}
 			post, err = http.Post(FormatURL(domAndPort, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
-			if err != nil {
+			if post != nil && err != nil {
 				log.Println(err)
 				return
 			}
