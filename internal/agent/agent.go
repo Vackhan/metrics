@@ -72,7 +72,7 @@ func sendMemStats(memStats any, domAndPort string) {
 		//log.Println(err)
 		return
 	}
-	post, err = http.Post(FormatURL(domAndPort, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
+	post, err = http.Post(FormatURL(domAndPort, update.CounterType, "PollCount", 5), "Content-Type: text/plain", nil)
 	if post != nil && err != nil {
 		//log.Println(err)
 		return
