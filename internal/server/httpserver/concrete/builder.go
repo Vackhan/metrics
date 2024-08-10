@@ -9,7 +9,7 @@ import (
 func WithHTTPServer() server.Server {
 	s := &httpServer{}
 	s.SetEndpoints(
-		endpoint.NewUpdateEndpoint(update.NewMemStorage()),
+		endpoint.NewUpdateEndpoint(update.NewUpdateMemStorage()),
 	)
 	return s
 }
