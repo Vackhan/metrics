@@ -39,9 +39,9 @@ func (a *Agent) Run(URL string, ctx context.Context) error {
 		case err := <-errChan:
 			return err
 		default:
+			time.Sleep(2 * time.Second)
 			runtime.ReadMemStats(memStats)
 			sendDataToChan(memStats, memStatsChan)
-			time.Sleep(2 * time.Second)
 		}
 	}
 }
