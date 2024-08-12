@@ -23,12 +23,23 @@ func (a *Agent) Run(URL string, ctx context.Context) error {
 	memStats := &runtime.MemStats{}
 	memStatsChan := make(chan interface{}, 10)
 	sendDataToChan(memStats, memStatsChan)
+	startSendToServer(memStatsChan, URL)
 	errChan := make(chan error, 1)
 	go func() {
-		err := sendToServer(memStatsChan, URL)
-		if err != nil {
-			errChan <- err
-			return
+		for {
+			select {
+			case ms, ok := <-memStatsChan:
+				if !ok {
+					return
+				}
+				err := sendMemStats(ms, URL)
+				if err != nil {
+					errChan <- err
+					return
+				}
+			default:
+				time.Sleep(10 * time.Second)
+			}
 		}
 	}()
 	defer close(memStatsChan)
@@ -48,26 +59,23 @@ func (a *Agent) Run(URL string, ctx context.Context) error {
 
 var types = []string{"uint64", "uint32", "float64"}
 
+// sendDataToChan отправка данных в канал
 func sendDataToChan(memStats *runtime.MemStats, memStatsChan chan interface{}) {
 	runtime.ReadMemStats(memStats)
 	memStatsChan <- *memStats
 }
 
-func sendToServer(c chan interface{}, URL string) error {
-	for {
-		select {
-		case memStats, ok := <-c:
-			if !ok {
-				return nil
-			}
-			err := sendMemStats(memStats, URL)
-			if err != nil {
-				return err
-			}
-		default:
-			time.Sleep(10 * time.Second)
-		}
+// startSendToServer начальная выгрузка в сервер
+func startSendToServer(c chan interface{}, URL string) error {
+	ms, ok := <-c
+	if !ok {
+		return nil
 	}
+	err := sendMemStats(ms, URL)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func sendMemStats(memStats any, URL string) error {
