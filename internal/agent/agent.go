@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Vackhan/metrics/internal/server/pkg/functionality/update"
 	"math/rand"
@@ -18,28 +19,58 @@ func New() *Agent {
 	return &Agent{}
 }
 
-func (a *Agent) Run(domAndPort string, ctx context.Context) {
+func (a *Agent) Run(URL string, ctx context.Context) error {
 	memStats := &runtime.MemStats{}
-	counter := 0
+	memStatsChan := make(chan interface{}, 10)
+	sendDataToChan(memStats, memStatsChan)
+	errChan := make(chan error, 1)
+	go func() {
+		err := sendToServer(memStatsChan, URL)
+		if err != nil {
+			errChan <- err
+			return
+		}
+	}()
+	defer close(memStatsChan)
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return nil
+		case err := <-errChan:
+			return err
 		default:
-			counter++
-			runtime.ReadMemStats(memStats)
 			time.Sleep(2 * time.Second)
-			if counter == 5 {
-				counter = 0
-				sendMemStats(*memStats, domAndPort)
-			}
+			runtime.ReadMemStats(memStats)
+			sendDataToChan(memStats, memStatsChan)
 		}
 	}
 }
 
 var types = []string{"uint64", "uint32", "float64"}
 
-func sendMemStats(memStats any, domAndPort string) {
+func sendDataToChan(memStats *runtime.MemStats, memStatsChan chan interface{}) {
+	runtime.ReadMemStats(memStats)
+	memStatsChan <- *memStats
+}
+
+func sendToServer(c chan interface{}, URL string) error {
+	for {
+		select {
+		case memStats, ok := <-c:
+			if !ok {
+				return nil
+			}
+			err := sendMemStats(memStats, URL)
+			if err != nil {
+				return err
+			}
+		default:
+			time.Sleep(10 * time.Second)
+		}
+	}
+}
+
+func sendMemStats(memStats any, URL string) error {
 	t := reflect.TypeOf(memStats)
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -54,35 +85,47 @@ func sendMemStats(memStats any, domAndPort string) {
 		typeOfField := val.Field(i).Type().String()
 		value := val.Field(i).Interface()
 		if slices.Contains(types, typeOfField) {
-			post, err := http.Post(FormatURL(domAndPort, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
+			post, err := http.Post(FormatURL(URL, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
 			if post != nil && post.Body != nil {
+				if post.StatusCode != http.StatusOK {
+					return errors.New("failed status code")
+				}
 				post.Body.Close()
 			}
 			if err != nil {
 				//log.Println(err)
-				return
+				return err
 			}
 		}
 	}
-	post, err := http.Post(FormatURL(domAndPort, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
+	post, err := http.Post(FormatURL(URL, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
 	if post != nil && post.Body != nil {
+		if post.StatusCode != http.StatusOK {
+			return errors.New("failed status code")
+		}
 		post.Body.Close()
 	}
 	if err != nil {
 		//log.Println(err)
-		return
+		return err
 	}
-	post, err = http.Post(FormatURL(domAndPort, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
+	post, err = http.Post(FormatURL(URL, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
 	if post != nil && err != nil {
-		//log.Println(err)
-		return
+		if post.StatusCode != http.StatusOK {
+			return errors.New("failed status code")
+		}
+		return err
 	}
 	if post.Body != nil {
+		if post.StatusCode != http.StatusOK {
+			return errors.New("failed status code")
+		}
 		post.Body.Close()
 	}
+	return nil
 }
 
-func FormatURL(domAndPort, metricType, metricName string, value any) string {
-	url := fmt.Sprintf("http://%s/update/%s/%s/%v", domAndPort, metricType, metricName, value)
+func FormatURL(URL, metricType, metricName string, value any) string {
+	url := fmt.Sprintf("%s/update/%s/%s/%v", URL, metricType, metricName, value)
 	return url
 }

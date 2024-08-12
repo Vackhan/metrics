@@ -24,6 +24,6 @@ func (m *MemStorage) AddToCounter(name string, val int64) error {
 	return nil
 }
 
-func NewMemStorage() storage.UpdateRepo {
+func NewUpdateMemStorage() storage.UpdateRepo {
 	return &MemStorage{make(map[string]float64), make(map[string][]int64)}
 }
