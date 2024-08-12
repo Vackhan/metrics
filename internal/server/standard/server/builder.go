@@ -1,12 +1,12 @@
-package concrete
+package server
 
 import (
 	"github.com/Vackhan/metrics/internal/server"
-	endpoint "github.com/Vackhan/metrics/internal/server/httpserver/endpoints/update"
 	"github.com/Vackhan/metrics/internal/server/pkg/storage/memory/update"
+	endpoint "github.com/Vackhan/metrics/internal/server/standard/endpoints/update"
 )
 
-func WithHTTPServer() server.Server {
+func WithStandardServer() server.Server {
 	s := &httpServer{}
 	s.SetEndpoints(
 		endpoint.NewUpdateEndpoint(update.NewUpdateMemStorage()),

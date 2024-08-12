@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Vackhan/metrics/internal/server/pkg/functionality/update"
+	"github.com/Vackhan/metrics/internal/server/pkg/functionality"
 	"math/rand"
 	"net/http"
 	"reflect"
@@ -23,12 +23,23 @@ func (a *Agent) Run(URL string, ctx context.Context) error {
 	memStats := &runtime.MemStats{}
 	memStatsChan := make(chan interface{}, 10)
 	sendDataToChan(memStats, memStatsChan)
+	startSendToServer(memStatsChan, URL)
 	errChan := make(chan error, 1)
 	go func() {
-		err := sendToServer(memStatsChan, URL)
-		if err != nil {
-			errChan <- err
-			return
+		for {
+			select {
+			case ms, ok := <-memStatsChan:
+				if !ok {
+					return
+				}
+				err := sendMemStats(ms, URL)
+				if err != nil {
+					errChan <- err
+					return
+				}
+			default:
+				time.Sleep(10 * time.Second)
+			}
 		}
 	}()
 	defer close(memStatsChan)
@@ -48,26 +59,23 @@ func (a *Agent) Run(URL string, ctx context.Context) error {
 
 var types = []string{"uint64", "uint32", "float64"}
 
+// sendDataToChan отправка данных в канал
 func sendDataToChan(memStats *runtime.MemStats, memStatsChan chan interface{}) {
 	runtime.ReadMemStats(memStats)
 	memStatsChan <- *memStats
 }
 
-func sendToServer(c chan interface{}, URL string) error {
-	for {
-		select {
-		case memStats, ok := <-c:
-			if !ok {
-				return nil
-			}
-			err := sendMemStats(memStats, URL)
-			if err != nil {
-				return err
-			}
-		default:
-			time.Sleep(10 * time.Second)
-		}
+// startSendToServer начальная выгрузка в сервер
+func startSendToServer(c chan interface{}, URL string) error {
+	ms, ok := <-c
+	if !ok {
+		return nil
 	}
+	err := sendMemStats(ms, URL)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func sendMemStats(memStats any, URL string) error {
@@ -85,7 +93,7 @@ func sendMemStats(memStats any, URL string) error {
 		typeOfField := val.Field(i).Type().String()
 		value := val.Field(i).Interface()
 		if slices.Contains(types, typeOfField) {
-			post, err := http.Post(FormatURL(URL, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
+			post, err := http.Post(FormatURL(URL, functionality.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
 			if post != nil && post.Body != nil {
 				if post.StatusCode != http.StatusOK {
 					return errors.New("failed status code")
@@ -98,7 +106,7 @@ func sendMemStats(memStats any, URL string) error {
 			}
 		}
 	}
-	post, err := http.Post(FormatURL(URL, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
+	post, err := http.Post(FormatURL(URL, functionality.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
 	if post != nil && post.Body != nil {
 		if post.StatusCode != http.StatusOK {
 			return errors.New("failed status code")
@@ -109,7 +117,7 @@ func sendMemStats(memStats any, URL string) error {
 		//log.Println(err)
 		return err
 	}
-	post, err = http.Post(FormatURL(URL, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
+	post, err = http.Post(FormatURL(URL, functionality.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
 	if post != nil && err != nil {
 		if post.StatusCode != http.StatusOK {
 			return errors.New("failed status code")

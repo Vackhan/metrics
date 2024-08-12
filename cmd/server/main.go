@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/Vackhan/metrics/internal/server"
-	httpConcrete "github.com/Vackhan/metrics/internal/server/httpserver/concrete"
+	chiServer "github.com/Vackhan/metrics/internal/server/chi/server"
 	"log"
 )
 
 func main() {
 	err := server.NewServer(
-		httpConcrete.WithHTTPServer(),
+		chiServer.WithChiServer(),
 		":8080",
 	).Run()
 	if err != nil {

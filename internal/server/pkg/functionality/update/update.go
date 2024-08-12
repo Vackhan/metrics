@@ -1,15 +1,13 @@
 package update
 
 import (
+	"github.com/Vackhan/metrics/internal/server/pkg/functionality"
 	"github.com/Vackhan/metrics/internal/server/pkg/runerr"
 	"github.com/Vackhan/metrics/internal/server/pkg/storage"
 	"log"
 	"strconv"
 	"strings"
 )
-
-const GaugeType = "gauge"
-const CounterType = "counter"
 
 type Update struct {
 	storage storage.UpdateRepo
@@ -23,7 +21,7 @@ func (u *Update) DoUpdate(path string) error {
 	log.Println(urlData)
 	var err error
 	switch urlData[1] {
-	case GaugeType:
+	case functionality.GaugeType:
 		var g float64
 		if g, err = strconv.ParseFloat(urlData[3], 64); err != nil {
 			return runerr.ErrWrongMetricType
@@ -33,7 +31,7 @@ func (u *Update) DoUpdate(path string) error {
 		if err != nil {
 			return err
 		}
-	case CounterType:
+	case functionality.CounterType:
 		var c int64
 		if c, err = strconv.ParseInt(urlData[3], 10, 64); err != nil {
 			log.Println(err)

@@ -1,36 +1,39 @@
-package concrete
+package server
 
 import (
 	"github.com/Vackhan/metrics/internal/server"
 	"github.com/Vackhan/metrics/internal/server/pkg/runerr"
+	"github.com/go-chi/chi/v5"
 	"log"
 	"net/http"
 )
 
-type httpServer struct {
+type chiServer struct {
 	url       string
 	endpoints []server.Endpoint
 }
 
-func (h *httpServer) SetURLListener(url string) {
+func (h *chiServer) SetURLListener(url string) {
 	h.url = url
 }
 
-func (h *httpServer) SetEndpoints(e ...server.Endpoint) {
+func (h *chiServer) SetEndpoints(e ...server.Endpoint) {
 	h.endpoints = e
 }
 
-func (h *httpServer) Run() error {
-	mux := http.NewServeMux()
+func (h *chiServer) Run() error {
+	r := chi.NewRouter()
 	log.Println(h.endpoints)
 	for _, e := range h.endpoints {
-		f, ok := e.GetFunctionality().(func(w http.ResponseWriter, r *http.Request))
-		if !ok {
+		f := e.GetFunctionality()
+		switch v := f.(type) {
+		case func(r chi.Router):
+			r.Route(e.GetURL(), v)
+		default:
 			return runerr.ErrWrongHandlerType
 		}
-		mux.HandleFunc(e.GetURL(), f)
 		log.Println("listen to " + e.GetURL())
 	}
 	log.Println("run server")
-	return http.ListenAndServe(h.url, mux)
+	return http.ListenAndServe(h.url, r)
 }
