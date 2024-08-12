@@ -34,6 +34,6 @@ func (h *chiServer) Run() error {
 		}
 		log.Println("listen to " + e.GetURL())
 	}
-	log.Println("run server")
+	log.Println("run server " + h.url)
 	return http.ListenAndServe(h.url, r)
 }

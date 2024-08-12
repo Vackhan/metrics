@@ -31,6 +31,6 @@ func TestAgent_Run(t *testing.T) {
 	defer srv.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 	defer cancel()
-	err := New().Run(srv.URL, ctx)
+	err := New(srv.URL, ctx).Run()
 	require.NoError(t, err)
 }

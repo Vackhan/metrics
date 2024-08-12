@@ -2,9 +2,9 @@ package server
 
 import (
 	"github.com/Vackhan/metrics/internal/server"
-	"github.com/Vackhan/metrics/internal/server/chi/endpoints/mainpage"
-	updendpoint "github.com/Vackhan/metrics/internal/server/chi/endpoints/update"
-	"github.com/Vackhan/metrics/internal/server/chi/endpoints/value"
+	"github.com/Vackhan/metrics/internal/server/chiserver/endpoints/mainpage"
+	updendpoint "github.com/Vackhan/metrics/internal/server/chiserver/endpoints/update"
+	"github.com/Vackhan/metrics/internal/server/chiserver/endpoints/value"
 	updmemory "github.com/Vackhan/metrics/internal/server/pkg/storage/memory/update"
 )
 

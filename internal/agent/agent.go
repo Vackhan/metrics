@@ -13,17 +13,22 @@ import (
 	"time"
 )
 
-type Agent struct{}
-
-func New() *Agent {
-	return &Agent{}
+type Agent struct {
+	URL string
+	ctx context.Context
+	r   int
+	p   int
 }
 
-func (a *Agent) Run(URL string, ctx context.Context) error {
+func New(URL string, ctx context.Context, r, p int) *Agent {
+	return &Agent{URL, ctx, r, p}
+}
+
+func (a *Agent) Run() error {
 	memStats := &runtime.MemStats{}
 	memStatsChan := make(chan interface{}, 10)
 	sendDataToChan(memStats, memStatsChan)
-	startSendToServer(memStatsChan, URL)
+	startSendToServer(memStatsChan, a.URL)
 	errChan := make(chan error, 1)
 	go func() {
 		for {
@@ -32,25 +37,25 @@ func (a *Agent) Run(URL string, ctx context.Context) error {
 				if !ok {
 					return
 				}
-				err := sendMemStats(ms, URL)
+				err := sendMemStats(ms, a.URL)
 				if err != nil {
 					errChan <- err
 					return
 				}
 			default:
-				time.Sleep(10 * time.Second)
+				time.Sleep(time.Duration(a.r) * time.Second)
 			}
 		}
 	}()
 	defer close(memStatsChan)
 	for {
 		select {
-		case <-ctx.Done():
+		case <-a.ctx.Done():
 			return nil
 		case err := <-errChan:
 			return err
 		default:
-			time.Sleep(2 * time.Second)
+			time.Sleep(time.Duration(a.p) * time.Second)
 			runtime.ReadMemStats(memStats)
 			sendDataToChan(memStats, memStatsChan)
 		}
