@@ -6,20 +6,32 @@ import (
 	"github.com/Vackhan/metrics/internal/agent"
 	"github.com/Vackhan/metrics/internal/server/pkg/flags"
 	"github.com/spf13/pflag"
+	"log"
 	"time"
 )
 
 func main() {
-	serverAddrAndPort := flags.NewAddress()
-	pflag.VarP(serverAddrAndPort, "a", "a", "host and port of the listener")
-	ttl := pflag.IntP("ttl", "t", 0, "time to live for agent")
-	r := pflag.IntP("r", "r", 10, "server send frequency in seconds")
-	p := pflag.IntP("p", "p", 2, "consuming data frequency in seconds")
+	serverAddrAndPort, err := flags.GetAddress()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	ttlObj, err := flags.GetTTL()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	reportInterval, err := flags.GetReportInterval()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	pollInterval, err := flags.GetPollInterval()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	pflag.Parse()
 	var ctx context.Context
 	var cancel context.CancelFunc
-	if *ttl > 0 {
-		ctx, cancel = context.WithTimeout(context.Background(), time.Duration(*ttl)*time.Second)
+	if ttlObj.Duration > 0 {
+		ctx, cancel = context.WithTimeout(context.Background(), ttlObj.Duration*time.Second)
 		defer cancel()
 	} else {
 		ctx = context.Background()
@@ -27,7 +39,7 @@ func main() {
 	agent.New(
 		fmt.Sprintf("http://%s", serverAddrAndPort.String()),
 		ctx,
-		*r,
-		*p,
+		reportInterval.Interval,
+		pollInterval.Interval,
 	).Run()
 }
