@@ -35,7 +35,7 @@ func New(repo storage.UpdateRepo, params func(r *http.Request) (string, string))
 
 func standardParamsConsuming(r *http.Request) (string, string) {
 	urlData := strings.Split(r.URL.Path[1:], "/")
-	newData := make([]string, 3, 3)
+	newData := make([]string, 3)
 	copy(newData, urlData)
 	return newData[1], newData[2]
 }
