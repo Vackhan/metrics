@@ -10,12 +10,8 @@ import (
 
 // TestHttpUpdateEndpoint тестирование эндпоинта update для стандартного http сервера с использованием хранилища в памяти
 func TestHttpUpdateEndpoint(t *testing.T) {
-	//создаем эндпоинт с хранилищем из памяти
-	endpoint := NewUpdateEndpoint(updateMemStorage.NewUpdateMemStorage())
 	//получаем хэндлер
-	handler, ok := endpoint.GetFunctionality().(func(w http.ResponseWriter, r *http.Request))
-	//проверяем, что вернулся правльный для http сервера хендлер
-	assert.True(t, ok, "GetFunctionality returns wrong handler type")
+	handler := New(updateMemStorage.NewUpdateMemStorage())
 	tests := []struct {
 		url  string
 		code int

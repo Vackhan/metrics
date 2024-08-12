@@ -15,7 +15,3 @@ type Endpoint interface {
 	GetURL() string
 	GetFunctionality() any
 }
-
-type Repository interface {
-	ImplementRepository()
-}

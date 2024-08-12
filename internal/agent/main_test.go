@@ -2,9 +2,9 @@ package agent
 
 import (
 	"context"
-	update2 "github.com/Vackhan/metrics/internal/server/httpserver/endpoints/update"
-	"github.com/Vackhan/metrics/internal/server/pkg/functionality/update"
+	"github.com/Vackhan/metrics/internal/server/pkg/functionality"
 	mem "github.com/Vackhan/metrics/internal/server/pkg/storage/memory/update"
+	update2 "github.com/Vackhan/metrics/internal/server/standard/endpoints/update"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -17,7 +17,7 @@ func TestAgent_Run(t *testing.T) {
 	assert.Equal(
 		t,
 		"http://localhost:8080/update/gauge/test/1",
-		FormatURL("http://localhost:8080", update.GaugeType, "test", 1),
+		FormatURL("http://localhost:8080", functionality.GaugeType, "test", 1),
 		"urls are not equals",
 	)
 	// это поможет передать хендлер тестовому серверу

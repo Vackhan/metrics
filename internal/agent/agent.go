@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Vackhan/metrics/internal/server/pkg/functionality/update"
+	"github.com/Vackhan/metrics/internal/server/pkg/functionality"
 	"math/rand"
 	"net/http"
 	"reflect"
@@ -85,7 +85,7 @@ func sendMemStats(memStats any, URL string) error {
 		typeOfField := val.Field(i).Type().String()
 		value := val.Field(i).Interface()
 		if slices.Contains(types, typeOfField) {
-			post, err := http.Post(FormatURL(URL, update.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
+			post, err := http.Post(FormatURL(URL, functionality.GaugeType, field.Name, value), "Content-Type: text/plain", nil)
 			if post != nil && post.Body != nil {
 				if post.StatusCode != http.StatusOK {
 					return errors.New("failed status code")
@@ -98,7 +98,7 @@ func sendMemStats(memStats any, URL string) error {
 			}
 		}
 	}
-	post, err := http.Post(FormatURL(URL, update.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
+	post, err := http.Post(FormatURL(URL, functionality.GaugeType, "RandomValue", rand.Float64()), "Content-Type: text/plain", nil)
 	if post != nil && post.Body != nil {
 		if post.StatusCode != http.StatusOK {
 			return errors.New("failed status code")
@@ -109,7 +109,7 @@ func sendMemStats(memStats any, URL string) error {
 		//log.Println(err)
 		return err
 	}
-	post, err = http.Post(FormatURL(URL, update.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
+	post, err = http.Post(FormatURL(URL, functionality.CounterType, "PollCount", 1), "Content-Type: text/plain", nil)
 	if post != nil && err != nil {
 		if post.StatusCode != http.StatusOK {
 			return errors.New("failed status code")

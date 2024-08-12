@@ -7,18 +7,8 @@ import (
 	"net/http"
 )
 
-type Update struct {
-	repo storage.UpdateRepo
-}
-
-func (u *Update) GetURL() string {
-	return "/update/"
-}
-func (u *Update) GetFunctionality() any {
-	return updateFunc(u.repo)
-}
-
-func updateFunc(repo storage.UpdateRepo) func(w http.ResponseWriter, r *http.Request) {
+// New обработчик для update серверов, совместимых со стандартным сервером go
+func New(repo storage.UpdateRepo) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		command := update.NewUpdate(repo)
 		err := command.DoUpdate(r.URL.Path)
@@ -41,8 +31,4 @@ func updateFunc(repo storage.UpdateRepo) func(w http.ResponseWriter, r *http.Req
 			return
 		}
 	}
-}
-
-func NewUpdateEndpoint(repo storage.UpdateRepo) *Update {
-	return &Update{repo}
 }
