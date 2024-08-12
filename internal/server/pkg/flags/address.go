@@ -28,6 +28,15 @@ func (a *Address) Set(flagValue string) error {
 	return nil
 }
 
-func NewAddress() *Address {
-	return &Address{Host: "", Port: "8080"}
+func GetAddress() (*Address, error) {
+	a := &Address{
+		Host: "",
+		Port: "8080",
+	}
+	err := setEnvFlag(a, "ADDRESS", "a", "a", "host and port of the listener")
+	if err != nil {
+		return nil, err
+	}
+
+	return a, nil
 }

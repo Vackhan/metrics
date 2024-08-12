@@ -9,10 +9,12 @@ import (
 )
 
 func main() {
-	addressAndPort := flags.NewAddress()
-	pflag.VarP(addressAndPort, "a", "a", "host and port of the listener")
+	addressAndPort, err := flags.GetAddress()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	pflag.Parse()
-	err := server.NewServer(
+	err = server.NewServer(
 		chiServer.WithChiServer(),
 		addressAndPort.String(),
 	).Run()
