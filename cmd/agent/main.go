@@ -11,10 +11,10 @@ import (
 
 func main() {
 	serverAddrAndPort := flags.NewAddress()
-	pflag.Var(serverAddrAndPort, "a", "host and port of the listener")
-	ttl := pflag.Int("ttl", 0, "time to live for agent")
-	r := pflag.Int("r", 10, "server send frequency in seconds")
-	p := pflag.Int("p", 2, "consuming data frequency in seconds")
+	pflag.VarP(serverAddrAndPort, "a", "a", "host and port of the listener")
+	ttl := pflag.IntP("ttl", "t", 0, "time to live for agent")
+	r := pflag.IntP("r", "r", 10, "server send frequency in seconds")
+	p := pflag.IntP("p", "p", 2, "consuming data frequency in seconds")
 	pflag.Parse()
 	var ctx context.Context
 	var cancel context.CancelFunc
