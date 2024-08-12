@@ -3,7 +3,7 @@ package server
 import (
 	"github.com/Vackhan/metrics/internal/server"
 	"github.com/Vackhan/metrics/internal/server/pkg/storage/memory/update"
-	endpoint "github.com/Vackhan/metrics/internal/server/standard/endpoints/update"
+	endpoint "github.com/Vackhan/metrics/internal/server/standardserver/endpoints/update"
 )
 
 func WithStandardServer() server.Server {

@@ -3,8 +3,8 @@ package agent
 import (
 	"context"
 	"github.com/Vackhan/metrics/internal/server/pkg/functionality"
+	"github.com/Vackhan/metrics/internal/server/pkg/httphandlers/update"
 	mem "github.com/Vackhan/metrics/internal/server/pkg/storage/memory/update"
-	update2 "github.com/Vackhan/metrics/internal/server/standard/endpoints/update"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"net/http"
@@ -21,10 +21,8 @@ func TestAgent_Run(t *testing.T) {
 		"urls are not equals",
 	)
 	// это поможет передать хендлер тестовому серверу
-	endpoint := update2.NewUpdateEndpoint(mem.NewUpdateMemStorage())
-	updateHandler, ok := endpoint.GetFunctionality().(func(w http.ResponseWriter, r *http.Request))
-	require.True(t, ok)
-	testHandler := http.HandlerFunc(updateHandler)
+	endpoint := update.New(mem.NewUpdateMemStorage())
+	testHandler := http.HandlerFunc(endpoint)
 	// запускаем тестовый сервер, будет выбран первый свободный порт
 	srv := httptest.NewServer(testHandler)
 	// останавливаем сервер после завершения теста
