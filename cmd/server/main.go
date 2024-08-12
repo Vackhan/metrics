@@ -10,7 +10,7 @@ import (
 
 func main() {
 	addressAndPort := flags.NewAddress()
-	pflag.Var(addressAndPort, "a", "host and port of the listener")
+	pflag.VarP(addressAndPort, "a", "a", "host and port of the listener")
 	pflag.Parse()
 	err := server.NewServer(
 		chiServer.WithChiServer(),
