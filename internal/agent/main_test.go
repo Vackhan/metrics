@@ -29,7 +29,7 @@ func TestAgent_Run(t *testing.T) {
 	srv := httptest.NewServer(testHandler)
 	// останавливаем сервер после завершения теста
 	defer srv.Close()
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 	defer cancel()
 	err := New().Run(srv.URL, ctx)
 	require.NoError(t, err)
